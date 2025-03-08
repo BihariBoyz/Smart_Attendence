@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="mb-0">Welcome, {{ session.get('user_email', 'Admin') }}!</h5>
+                    </div>
+                    <p class="lead">Manage your Smart Attendance System from this dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Students Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Students</h5>
+                </div>
+                <div class="card-body">
+                    <p>Manage student accounts, register face data, and view student information.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Students" alt="Students" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('admin_students') }}" class="btn btn-info">
+                        <i class="fas fa-arrow-right me-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Courses Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>Courses</h5>
+                </div>
+                <div class="card-body">
+                    <p>Manage courses, assign students to courses, and view course information.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Courses" alt="Courses" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('admin_courses') }}" class="btn btn-success">
+                        <i class="fas fa-arrow-right me-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <p>View and manage attendance records, generate reports, and export data.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Attendance" alt="Attendance" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('admin_attendance') }}" class="btn btn-warning">
+                        <i class="fas fa-arrow-right me-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Face Recognition Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Face Recognition</h5>
+                </div>
+                <div class="card-body">
+                    <p>Use real-time face recognition to identify students and mark attendance.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Face+Recognition" alt="Face Recognition" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('realtime_recognition') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i> Start Recognition
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>System Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <h3 class="text-primary">{{ students|default(0) }}</h3>
+                                <p>Total Students</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <h3 class="text-success">{{ courses|default(0) }}</h3>
+                                <p>Total Courses</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <h3 class="text-warning">{{ attendance_records|default(0) }}</h3>
+                                <p>Attendance Records</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card">
+                                <h3 class="text-info">{{ face_registrations|default(0) }}</h3>
+                                <p>Face Registrations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-10">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Firebase Availability:</strong> {{ 'Available' if firebase_available else 'Not Available - Using Mock Data' }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

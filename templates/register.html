@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center font-weight-light my-2">Create Account</h3>
+                </div>
+                <div class="card-body">
+                    {% if not firebase_available %}
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> Firebase is not available. Using mock authentication.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <input class="form-control" id="name" name="name" type="text" placeholder="Enter your name" required />
+                                    <label for="name">Full Name</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="email" name="email" type="email" placeholder="name@example.com" required />
+                            <label for="email">Email address</label>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3 mb-md-0">
+                                    <input class="form-control" id="password" name="password" type="password" placeholder="Create a password" required />
+                                    <label for="password">Password</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3 mb-md-0">
+                                    <input class="form-control" id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" required />
+                                    <label for="confirmPassword">Confirm Password</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" id="role-student" type="radio" name="role" value="student" checked />
+                                <label class="form-check-label" for="role-student">
+                                    <i class="fas fa-user-graduate me-1"></i> Register as Student
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" id="role-admin" type="radio" name="role" value="admin" />
+                                <label class="form-check-label" for="role-admin">
+                                    <i class="fas fa-user-shield me-1"></i> Register as Admin
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mt-4 mb-0">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <div class="small"><a href="{{ url_for('login') }}">Have an account? Go to login</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        form.addEventListener('submit', function(event) {
+            if (password.value !== confirmPassword.value) {
+                event.preventDefault();
+                alert('Passwords do not match!');
+            }
+        });
+    });
+</script>
+{% endblock %} 

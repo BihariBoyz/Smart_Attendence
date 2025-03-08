@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Face Data - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Register Face Data</h4>
+        </div>
+        <div class="card-body">
+            {% if students and students|length > 0 %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Select a student to register their face data for attendance recognition.
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.id }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#registerFaceModal" 
+                                            data-student-id="{{ student.id }}" data-student-name="{{ student.name }}">
+                                        <i class="fas fa-camera"></i> Register Face
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> All students already have face data registered.
+                </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Face Modal -->
+<div class="modal fade" id="registerFaceModal" tabindex="-1" role="dialog" aria-labelledby="registerFaceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="registerFaceModalLabel">Register Face Data</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> This is a simplified version of the application. In the full version, this would activate your camera to capture face data.
+                </div>
+                
+                <div class="text-center mb-3">
+                    <div class="border p-3 mb-3" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-camera fa-5x text-muted"></i>
+                    </div>
+                    <p class="student-name-display">Student: <span id="studentNameDisplay"></span></p>
+                </div>
+                
+                <form id="registerFaceForm" action="{{ url_for('simulate_face_register') }}" method="POST">
+                    <input type="hidden" id="studentIdInput" name="student_id" value="">
+                    <div class="form-group text-center">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Simulate Face Registration
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#registerFaceModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var studentId = button.data('student-id');
+            var studentName = button.data('student-name');
+            
+            var modal = $(this);
+            modal.find('#studentNameDisplay').text(studentName);
+            modal.find('#studentIdInput').val(studentId);
+        });
+    });
+</script>
+{% endblock %} 

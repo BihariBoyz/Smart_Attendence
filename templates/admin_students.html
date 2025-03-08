@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Students - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Student Management</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Students</h5>
+                    <a href="{{ url_for('admin_add_student') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-user-plus"></i> Add New Student
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchStudent" placeholder="Search by name or email...">
+                                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="faceDataFilter">
+                                <option value="all">All Students</option>
+                                <option value="registered">With Face Data</option>
+                                <option value="unregistered">Without Face Data</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex justify-content-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="bulkActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Bulk Actions
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="bulkActionsDropdown">
+                                        <li><a class="dropdown-item" href="#" id="bulkRegisterFace">Register Face Data</a></li>
+                                        <li><a class="dropdown-item" href="#" id="bulkExport">Export Selected</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" id="bulkDelete">Delete Selected</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if students %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="selectAll">
+                                            </div>
+                                        </th>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Face Data</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                        <tr>
+                                            <td>
+                                                <div class="form-check">
+                                                    <input class="form-check-input student-checkbox" type="checkbox" value="{{ student.id }}">
+                                                </div>
+                                            </td>
+                                            <td>{{ student.id }}</td>
+                                            <td>{{ student.name }}</td>
+                                            <td>{{ student.email }}</td>
+                                            <td>
+                                                {% if student.has_face_data %}
+                                                    <span class="badge bg-success">Registered</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Not Registered</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-info view-student" data-student-id="{{ student.id }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-warning edit-student" data-student-id="{{ student.id }}">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                {% if not student.has_face_data %}
+                                                    <a href="{{ url_for('admin_register_face', student_id=student.id) }}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-camera"></i>
+                                                    </a>
+                                                {% endif %}
+                                                <button type="button" class="btn btn-sm btn-danger delete-student" data-student-id="{{ student.id }}" data-student-name="{{ student.name }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No students found. Click the "Add New Student" button to add your first student.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Student Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-primary">{{ students|length }}</h3>
+                                    <p class="mb-0">Total Students</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h3 class="text-success">{{ students|selectattr('has_face_data', 'eq', true)|list|length }}</h3>
+                                    <p class="mb-0">With Face Data</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Quick Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-check text-success"></i> Register face data for each student for attendance
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check text-success"></i> Use the search box to quickly find students
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check text-success"></i> Filter students by face data registration status
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Student Modal -->
+<div class="modal fade" id="viewStudentModal" tabindex="-1" aria-labelledby="viewStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="viewStudentModalLabel">Student Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <img id="studentFaceImage" src="" alt="Student Face" class="img-fluid rounded" style="max-height: 200px;" onerror="this.src='https://via.placeholder.com/200x200?text=No+Image'">
+                        </div>
+                        <div id="faceDataStatus" class="mb-3">
+                            <span class="badge bg-success">Face Data Registered</span>
+                        </div>
+                        <div id="faceDataActions">
+                            <button type="button" class="btn btn-sm btn-primary" id="registerFaceBtn">
+                                <i class="fas fa-camera"></i> Register Face
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="updateFaceBtn">
+                                <i class="fas fa-sync"></i> Update Face
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h4 id="studentName" class="mb-3">Student Name</h4>
+                        <div class="mb-3">
+                            <p><strong>Student ID:</strong> <span id="studentId"></span></p>
+                            <p><strong>Email:</strong> <span id="studentEmail"></span></p>
+                            <p><strong>Registered:</strong> <span id="studentRegistered"></span></p>
+                        </div>
+                        <div class="mb-3">
+                            <h5>Recent Attendance</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> In the full version, this would show recent attendance records for this student.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="viewAttendanceBtn" class="btn btn-primary">
+                    <i class="fas fa-clipboard-list"></i> View Attendance
+                </a>
+                <button type="button" class="btn btn-warning" id="editStudentModalBtn">
+                    <i class="fas fa-edit"></i> Edit Student
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="editStudentModalLabel">Edit Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    <input type="hidden" id="editStudentId" name="student_id">
+                    <div class="mb-3">
+                        <label for="editStudentName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="editStudentName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStudentEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editStudentEmail" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStudentPassword" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="editStudentPassword" name="password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="saveStudentChanges">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Student Modal -->
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteStudentModalLabel">Delete Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the student "<span id="deleteStudentName"></span>"? This action cannot be undone.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Deleting this student will also remove all associated attendance records and face data.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteStudent">Delete Student</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Delete Modal -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="bulkDeleteModalLabel">Delete Multiple Students</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <span id="selectedStudentCount">0</span> selected students? This action cannot be undone.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Deleting these students will also remove all associated attendance records and face data.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDelete">Delete Students</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize variables
+        const studentsTable = document.getElementById('studentsTable');
+        const searchInput = document.getElementById('searchStudent');
+        const searchBtn = document.getElementById('searchBtn');
+        const faceDataFilter = document.getElementById('faceDataFilter');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+        
+        // Select all checkbox
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        });
+        
+        // Search functionality
+        searchBtn.addEventListener('click', function() {
+            const searchValue = searchInput.value.toLowerCase();
+            const rows = studentsTable.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const name = row.cells[2].textContent.toLowerCase();
+                const email = row.cells[3].textContent.toLowerCase();
+                
+                if (name.includes(searchValue) || email.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Search on enter key
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+        
+        // Face data filter
+        faceDataFilter.addEventListener('change', function() {
+            const filterValue = this.value;
+            const rows = studentsTable.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const faceDataCell = row.cells[4].textContent.trim();
+                const hasData = faceDataCell.includes('Registered');
+                
+                if (filterValue === 'all' || 
+                    (filterValue === 'registered' && hasData) || 
+                    (filterValue === 'unregistered' && !hasData)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // View student buttons
+        const viewButtons = document.querySelectorAll('.view-student');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const row = this.closest('tr');
+                const studentName = row.cells[2].textContent;
+                const studentEmail = row.cells[3].textContent;
+                const hasFaceData = row.cells[4].textContent.includes('Registered');
+                
+                // Populate the modal
+                document.getElementById('studentId').textContent = studentId;
+                document.getElementById('studentName').textContent = studentName;
+                document.getElementById('studentEmail').textContent = studentEmail;
+                document.getElementById('studentRegistered').textContent = new Date().toLocaleDateString();
+                
+                // Set face data status and actions
+                if (hasFaceData) {
+                    document.getElementById('faceDataStatus').innerHTML = '<span class="badge bg-success">Face Data Registered</span>';
+                    document.getElementById('registerFaceBtn').style.display = 'none';
+                    document.getElementById('updateFaceBtn').style.display = 'inline-block';
+                    document.getElementById('studentFaceImage').src = `https://via.placeholder.com/200x200?text=${encodeURIComponent(studentName)}`;
+                } else {
+                    document.getElementById('faceDataStatus').innerHTML = '<span class="badge bg-warning">Face Data Not Registered</span>';
+                    document.getElementById('registerFaceBtn').style.display = 'inline-block';
+                    document.getElementById('updateFaceBtn').style.display = 'none';
+                    document.getElementById('studentFaceImage').src = 'https://via.placeholder.com/200x200?text=No+Face+Data';
+                }
+                
+                // Set register face button link
+                document.getElementById('registerFaceBtn').onclick = function() {
+                    window.location.href = `{{ url_for('admin_register_face') }}?student_id=${studentId}`;
+                };
+                
+                // Set view attendance button link
+                document.getElementById('viewAttendanceBtn').href = `{{ url_for('admin_attendance') }}?student_id=${studentId}`;
+                
+                // Set edit student button action
+                document.getElementById('editStudentModalBtn').onclick = function() {
+                    // Hide view modal
+                    const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewStudentModal'));
+                    viewModal.hide();
+                    
+                    // Populate edit modal
+                    document.getElementById('editStudentId').value = studentId;
+                    document.getElementById('editStudentName').value = studentName;
+                    document.getElementById('editStudentEmail').value = studentEmail;
+                    
+                    // Show edit modal
+                    const editModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+                    editModal.show();
+                };
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('viewStudentModal'));
+                modal.show();
+            });
+        });
+        
+        // Edit student buttons
+        const editButtons = document.querySelectorAll('.edit-student');
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const row = this.closest('tr');
+                const studentName = row.cells[2].textContent;
+                const studentEmail = row.cells[3].textContent;
+                
+                // Populate the modal
+                document.getElementById('editStudentId').value = studentId;
+                document.getElementById('editStudentName').value = studentName;
+                document.getElementById('editStudentEmail').value = studentEmail;
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+                modal.show();
+            });
+        });
+        
+        // Save student changes button
+        document.getElementById('saveStudentChanges').addEventListener('click', function() {
+            // In a real app, you would send a request to the server to update the student
+            // For now, we'll just show a success message and close the modal
+            alert('Student updated successfully!');
+            
+            // Hide the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
+            modal.hide();
+            
+            // Reload the page to see the changes
+            // window.location.reload();
+        });
+        
+        // Delete student buttons
+        const deleteButtons = document.querySelectorAll('.delete-student');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const studentName = this.getAttribute('data-student-name');
+                
+                // Populate the modal
+                document.getElementById('deleteStudentName').textContent = studentName;
+                
+                // Set confirm delete button action
+                document.getElementById('confirmDeleteStudent').onclick = function() {
+                    // In a real app, you would send a request to the server to delete the student
+                    // For now, we'll just remove the row from the table
+                    const row = button.closest('tr');
+                    row.remove();
+                    
+                    // Hide the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteStudentModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    alert('Student deleted successfully!');
+                };
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('deleteStudentModal'));
+                modal.show();
+            });
+        });
+        
+        // Bulk delete button
+        document.getElementById('bulkDelete').addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            if (count === 0) {
+                alert('Please select at least one student to delete.');
+                return;
+            }
+            
+            // Populate the modal
+            document.getElementById('selectedStudentCount').textContent = count;
+            
+            // Set confirm bulk delete button action
+            document.getElementById('confirmBulkDelete').onclick = function() {
+                // In a real app, you would send a request to the server to delete the students
+                // For now, we'll just remove the rows from the table
+                selectedCheckboxes.forEach(checkbox => {
+                    const row = checkbox.closest('tr');
+                    row.remove();
+                });
+                
+                // Hide the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
+                modal.hide();
+                
+                // Show success message
+                alert(`${count} students deleted successfully!`);
+            };
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+            modal.show();
+        });
+        
+        // Bulk export button
+        document.getElementById('bulkExport').addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            if (count === 0) {
+                alert('Please select at least one student to export.');
+                return;
+            }
+            
+            // In a real app, you would generate a CSV file with the selected students
+            alert(`In a full version, this would export ${count} selected students to a CSV file.`);
+        });
+        
+        // Bulk register face button
+        document.getElementById('bulkRegisterFace').addEventListener('click', function() {
+            const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            if (count === 0) {
+                alert('Please select at least one student to register face data.');
+                return;
+            }
+            
+            // In a real app, you would redirect to a page to register face data for multiple students
+            alert(`In a full version, this would allow you to register face data for ${count} selected students.`);
+        });
+    });
+</script>
+{% endblock %} 

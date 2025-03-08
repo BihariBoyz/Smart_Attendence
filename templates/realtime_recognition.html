@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Real-time Face Recognition - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Real-time Face Recognition</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> This page demonstrates real-time face recognition. Recognized students will be highlighted in green with their name, while unknown faces will be highlighted in red.
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <div class="video-container">
+                            <img src="{{ url_for('video_feed') }}" width="100%" class="border">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Recognition Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>Face detection is active. Recognized students will have their names displayed above their faces.</p>
+                                    <p><strong>Note:</strong> For best results, ensure good lighting and face the camera directly.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <a href="{{ url_for('mark_attendance') }}" class="btn btn-primary btn-block mb-2">
+                                        <i class="fas fa-clipboard-check"></i> Mark Attendance
+                                    </a>
+                                    {% if session.get('user_role') == 'admin' %}
+                                    <a href="{{ url_for('admin_register_face') }}" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-user-plus"></i> Register New Face
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="text-muted">
+                        <small>This feature uses OpenCV for face detection and a simple recognition algorithm. Performance may vary based on lighting conditions and camera quality.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        background-color: #f8f9fa;
+        margin-bottom: 20px;
+    }
+    
+    .video-container img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+{% endblock %} 

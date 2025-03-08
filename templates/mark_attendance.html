@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Mark Attendance</h2>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Use face recognition to mark your attendance for a course. Your attendance will be recorded in real-time.
+    </div>
+    
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-camera"></i> Face Recognition</h5>
+                </div>
+                <div class="card-body">
+                    <form id="attendanceForm" action="{{ url_for('mark_attendance') }}" method="post">
+                        <div class="mb-3">
+                            <label for="course_id" class="form-label">Select Course</label>
+                            <select class="form-select" id="course_id" name="course_id" required>
+                                <option value="">-- Select Course --</option>
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}">{{ course.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div id="cameraContainer" class="text-center mb-3" style="display: none;">
+                            <div class="video-container">
+                                <video id="video" width="100%" autoplay></video>
+                                <canvas id="canvas" style="display: none;"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <button type="button" id="captureBtn" class="btn btn-primary">
+                                    <i class="fas fa-camera"></i> Capture Photo
+                                </button>
+                                <button type="button" id="retakeBtn" class="btn btn-secondary" style="display: none;">
+                                    <i class="fas fa-redo"></i> Retake
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="previewContainer" class="text-center mb-3" style="display: none;">
+                            <h5>Preview</h5>
+                            <div class="preview-container">
+                                <img id="preview" class="img-fluid border rounded" alt="Captured face">
+                            </div>
+                            <input type="hidden" id="imageDataInput" name="image_data">
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" id="startCameraBtn" class="btn btn-success">
+                                <i class="fas fa-video"></i> Start Camera
+                            </button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">
+                                <i class="fas fa-check"></i> Submit Attendance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="list-group list-group-numbered mb-3">
+                        <li class="list-group-item">Select your course from the dropdown menu</li>
+                        <li class="list-group-item">Click "Start Camera" to activate your webcam</li>
+                        <li class="list-group-item">Position your face clearly in the frame</li>
+                        <li class="list-group-item">Click "Capture Photo" when ready</li>
+                        <li class="list-group-item">Review the captured image</li>
+                        <li class="list-group-item">Click "Submit Attendance" to mark your attendance</li>
+                    </ol>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> For best results:
+                        <ul class="mb-0 mt-2">
+                            <li>Ensure good lighting on your face</li>
+                            <li>Look directly at the camera</li>
+                            <li>Remove glasses or face coverings</li>
+                            <li>Keep a neutral expression</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-qrcode"></i> Alternative Methods</h5>
+                </div>
+                <div class="card-body">
+                    <p>If face recognition is not working, you can use these alternative methods:</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#qrCodeModal">
+                            <i class="fas fa-qrcode"></i> Scan QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="qrCodeModalLabel">Scan QR Code</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> In a full version, you would scan a QR code displayed by your instructor.
+                </div>
+                
+                <div class="text-center mb-3">
+                    <p>Select a course to simulate QR code scanning:</p>
+                    
+                    <div class="list-group">
+                        {% for course in courses %}
+                            <a href="{{ url_for('qr_attendance', course_id=course.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ course.name }}</h5>
+                                    <small><i class="fas fa-qrcode"></i></small>
+                                </div>
+                                <p class="mb-1">Simulate QR code attendance for this course</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .video-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        background-color: #f8f9fa;
+        margin-bottom: 20px;
+    }
+    
+    .video-container video, .preview-container img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    
+    .preview-container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // DOM elements
+    const courseSelect = document.getElementById('course_id');
+    const cameraContainer = document.getElementById('cameraContainer');
+    const previewContainer = document.getElementById('previewContainer');
+    const startCameraBtn = document.getElementById('startCameraBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const preview = document.getElementById('preview');
+    const imageDataInput = document.getElementById('imageDataInput');
+    
+    let stream = null;
+    
+    // Event listener for course selection
+    courseSelect.addEventListener('change', function() {
+        if (this.value) {
+            startCameraBtn.disabled = false;
+        } else {
+            startCameraBtn.disabled = true;
+        }
+    });
+    
+    // Start camera button
+    startCameraBtn.addEventListener('click', function() {
+        if (courseSelect.value) {
+            initCamera();
+            cameraContainer.style.display = 'block';
+            startCameraBtn.style.display = 'none';
+        } else {
+            alert('Please select a course first');
+        }
+    });
+    
+    // Initialize camera
+    function initCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(s) {
+                    stream = s;
+                    video.srcObject = stream;
+                })
+                .catch(function(error) {
+                    console.error("Camera error: ", error);
+                    alert("Could not access the camera. Please make sure your camera is connected and permissions are granted.");
+                });
+        } else {
+            alert("Sorry, your browser does not support camera access.");
+        }
+    }
+    
+    // Capture photo
+    captureBtn.addEventListener('click', function() {
+        const context = canvas.getContext('2d');
+        
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Draw video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Get image data
+        const imageData = canvas.toDataURL('image/jpeg');
+        
+        // Show preview
+        preview.src = imageData;
+        previewContainer.style.display = 'block';
+        
+        // Set image data in form
+        imageDataInput.value = imageData;
+        
+        // Update UI
+        captureBtn.style.display = 'none';
+        retakeBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'inline-block';
+    });
+    
+    // Retake photo
+    retakeBtn.addEventListener('click', function() {
+        previewContainer.style.display = 'none';
+        captureBtn.style.display = 'inline-block';
+        retakeBtn.style.display = 'none';
+        submitBtn.style.display = 'none';
+    });
+    
+    // Clean up when page is unloaded
+    window.addEventListener('beforeunload', function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+</script>
+{% endblock %} 

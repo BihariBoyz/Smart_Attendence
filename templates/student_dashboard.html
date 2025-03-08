@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Smart Attendance System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4 justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Student Dashboard</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="mb-0">Welcome, {{ session.get('user_email', 'Student') }}!</h5>
+                    </div>
+                    <p class="lead">View your attendance and manage your account from this dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Mark Attendance Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Mark Attendance</h5>
+                </div>
+                <div class="card-body">
+                    <p>Mark your attendance for classes using face recognition or QR code.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Attendance" alt="Attendance" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('mark_attendance') }}" class="btn btn-success">
+                        <i class="fas fa-arrow-right me-1"></i> Mark Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Face Recognition Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Face Recognition</h5>
+                </div>
+                <div class="card-body">
+                    <p>Use real-time face recognition to mark your attendance automatically.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Face+Recognition" alt="Face Recognition" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('realtime_recognition') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-right me-1"></i> Start Recognition
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Courses Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>My Courses</h5>
+                </div>
+                <div class="card-body">
+                    <p>View your enrolled courses and course details.</p>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Courses" alt="Courses" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-info">
+                        <i class="fas fa-arrow-right me-1"></i> View Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Summary Card -->
+        <div class="col-md-5 mb-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Attendance Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> This is a simplified version. In the full version, a chart would be displayed here.
+                    </div>
+                    <div class="text-center mt-4">
+                        <img src="https://via.placeholder.com/100x100?text=Summary" alt="Summary" class="img-fluid mb-3 rounded-circle">
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-warning">
+                        <i class="fas fa-arrow-right me-1"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Attendance</h5>
+                </div>
+                <div class="card-body">
+                    {% if attendance_records %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>Course</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in attendance_records %}
+                                        <tr>
+                                            <td>{{ record.timestamp }}</td>
+                                            <td>{{ record.course_name }}</td>
+                                            <td>
+                                                {% if record.method == 'face_recognition' %}
+                                                    <span class="badge bg-primary">Face Recognition</span>
+                                                {% elif record.method == 'qr_code' %}
+                                                    <span class="badge bg-success">QR Code</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ record.method }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">Present</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> No attendance records found. Mark your attendance to see your records here.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-10">
+            <div class="alert alert-warning text-center">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Firebase Availability:</strong> {{ 'Available' if firebase_available else 'Not Available - Using Mock Data' }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
